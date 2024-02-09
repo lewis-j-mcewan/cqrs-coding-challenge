@@ -1,8 +1,11 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApplication.Core.Common.Models;
+using WebApplication.Core.Users.Commands;
 using WebApplication.Core.Users.Common.Models;
 using WebApplication.Core.Users.Queries;
 
@@ -18,7 +21,8 @@ namespace WebApplication.Controllers
         {
             _mediator = mediator;
         }
-
+        
+        // GET /Users - Return a single user
         [HttpGet]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserAsync(
@@ -26,17 +30,65 @@ namespace WebApplication.Controllers
             CancellationToken cancellationToken)
         {
             UserDto result = await _mediator.Send(query, cancellationToken);
+            
             return Ok(result);
         }
-
-        // TODO: create a route (at /Find) that can retrieve a list of matching users using the `FindUsersQuery`
-
-        // TODO: create a route (at /List) that can retrieve a paginated list of users using the `ListUsersQuery`
-
-        // TODO: create a route that can create a user using the `CreateUserCommand`
-
-        // TODO: create a route that can update an existing user using the `UpdateUserCommand`
-
-        // TODO: create a route that can delete an existing user using the `DeleteUserCommand`
+        
+        // GET /Find - Return a list of matching users
+        [HttpGet("Find")] 
+        [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> FindUsersAsync(
+            [FromQuery] FindUsersQuery query,
+            CancellationToken cancellationToken)
+        {
+            IEnumerable<UserDto> result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        
+        // GET /List - Return a paginated list of users
+        [HttpGet("List")]
+        [ProducesResponseType(typeof(PaginatedDto<IEnumerable<UserDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ListUsersAsync(
+            [FromQuery] ListUsersQuery query,
+            CancellationToken cancellationToken)
+        {
+            PaginatedDto<IEnumerable<UserDto>> result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        
+        // POST /Users - create a user
+        [HttpPost]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateUserAsync(
+            [FromBody] CreateUserCommand body,
+            CancellationToken cancellationToken
+            )
+        {
+            UserDto result  = await _mediator.Send(body, cancellationToken);
+            return Ok(result);
+        }
+        
+        // PUT /Users - update an existing user
+        [HttpPut]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateUserAsync(
+            [FromBody] UpdateUserCommand body,
+            CancellationToken cancellationToken)
+        {
+            UserDto result = await _mediator.Send(body, cancellationToken);
+            return Ok(result);
+        }
+        
+        // DELETE /Users - delete an existing user
+        [HttpDelete]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteUserAsync(
+            [FromBody] DeleteUserCommand body,
+            CancellationToken cancellationToken
+            )
+        {
+            UserDto result = await _mediator.Send(body, cancellationToken);
+            return Ok(result);
+        }
     }
 }
