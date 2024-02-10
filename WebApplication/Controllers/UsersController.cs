@@ -85,11 +85,11 @@ namespace WebApplication.Controllers
         [HttpDelete]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteUserAsync(
-            [FromBody] DeleteUserCommand body,
+            [FromQuery] DeleteUserCommand query,
             CancellationToken cancellationToken
             )
         {
-            UserDto result = await _mediator.Send(body, cancellationToken);
+            UserDto result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
     }

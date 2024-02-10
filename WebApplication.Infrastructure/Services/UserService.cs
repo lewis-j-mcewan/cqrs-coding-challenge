@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,7 +79,18 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException("Implement a way to delete an existing user, including their contact details.");
+            
+            User? user = await _dbContext.Users.Where(user => user.Id == id)
+                .Include(x => x.ContactDetail)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (user == null) return default;
+            
+            _dbContext.Users.Remove(user);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            
+            return user;
+            
         }
 
         /// <inheritdoc />
