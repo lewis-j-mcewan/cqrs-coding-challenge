@@ -58,13 +58,23 @@ namespace WebApplication.Infrastructure.Services
         {
             await _dbContext.Users.AddAsync(user, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
+            
             return user;
         }
 
         /// <inheritdoc />
         public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException("Implement a way to update an existing user, including their contact details.");
+            User? retrievedUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id, cancellationToken);
+            
+            retrievedUser.Id = user.Id;
+            retrievedUser.GivenNames = user.GivenNames;
+            retrievedUser.LastName = user.LastName;
+            retrievedUser.ContactDetail = user.ContactDetail;
+            
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            
+            return user;
         }
 
         /// <inheritdoc />
