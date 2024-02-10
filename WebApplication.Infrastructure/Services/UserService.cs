@@ -36,8 +36,9 @@ namespace WebApplication.Infrastructure.Services
         public async Task<IEnumerable<User>> FindAsync(string? givenNames, string? lastName, CancellationToken cancellationToken = default)
         {
             IEnumerable<User> users = await _dbContext.Users
-                .Where(x => x.GivenNames.Equals(givenNames) || x.LastName.Equals(lastName))
-                .Include(x => x.ContactDetail)
+                .AsNoTracking()
+                .Where(user => user.GivenNames.Equals(givenNames) || user.LastName.Equals(lastName))
+                .Include(user => user.ContactDetail)
                 .ToListAsync(cancellationToken);
 
             return users;
