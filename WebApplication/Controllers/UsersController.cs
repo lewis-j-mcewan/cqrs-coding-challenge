@@ -65,7 +65,9 @@ namespace WebApplication.Controllers
             )
         {
             UserDto result  = await _mediator.Send(body, cancellationToken);
-            return Ok(result);
+            string location =  "/" + ControllerContext.ActionDescriptor.ControllerName + "?id=" + result.UserId;
+            
+            return Created(location, result);
         }
         
         // PUT /Users - update an existing user
