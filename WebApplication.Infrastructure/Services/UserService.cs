@@ -35,12 +35,12 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<IEnumerable<User>> FindAsync(string? givenNames, string? lastName, CancellationToken cancellationToken = default)
         {
-            IEnumerable<User> usersLewis = await _dbContext.Users
+            IEnumerable<User> users = await _dbContext.Users
                 .Where(x => x.GivenNames.Equals(givenNames) || x.LastName.Equals(lastName))
                 .Include(x => x.ContactDetail)
                 .ToListAsync(cancellationToken);
 
-            return usersLewis;
+            return users;
         }
 
         /// <inheritdoc />
