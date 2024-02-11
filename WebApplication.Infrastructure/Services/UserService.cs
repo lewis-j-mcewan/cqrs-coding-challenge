@@ -24,10 +24,9 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> GetAsync(int id, CancellationToken cancellationToken = default)
         {
-            User? user = await _dbContext.Users.Where(user => user.Id == id)
-                                         .Include(x => x.ContactDetail)
-                                         .FirstOrDefaultAsync(cancellationToken);
+            User user = GetUser(id, cancellationToken);
 
+            if (user.IsNull) return default;
             return user;
         }
 
@@ -46,8 +45,9 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<IEnumerable<User>> GetPaginatedAsync(int page, int count, CancellationToken cancellationToken = default)
         {
-            IEnumerable<User> usersOnPage =
-                await _dbContext.Users.Skip((page - 1) * count).Take(count).ToListAsync(cancellationToken);
+            IEnumerable<User> usersOnPage = await _dbContext.Users.Skip((page - 1) * count)
+                                                    .Take(count)
+                                                    .ToListAsync(cancellationToken);
 
             return usersOnPage;
         }
@@ -64,12 +64,9 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            User? retrievedUser = await _dbContext.Users
-                                        .Where(x => x.Id == user.Id)
-                                        .Include(x => x.ContactDetail)
-                                        .FirstOrDefaultAsync(cancellationToken);
+            User retrievedUser = GetUser(user.Id, cancellationToken);
 
-            if (retrievedUser == null) return default;
+            if (retrievedUser.IsNull) return default;
             
             retrievedUser.Id = user.Id;
             retrievedUser.GivenNames = user.GivenNames;
@@ -84,13 +81,9 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-
-            User? user = await _dbContext.Users
-                                .Where(user => user.Id == id)
-                                .Include(x => x.ContactDetail)
-                                .FirstOrDefaultAsync(cancellationToken);
+            User user = GetUser(id, cancellationToken);
             
-            if (user == null) return default;
+            if (user.IsNull) return default;
             
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -104,6 +97,16 @@ namespace WebApplication.Infrastructure.Services
             int totalUserCount = await _dbContext.Users.CountAsync(cancellationToken);
 
             return totalUserCount;
+        }
+
+        private User GetUser(int id, CancellationToken cancellationToken)
+        {
+            User user = _dbContext.Users.Where(user => user.Id == id)
+                                .Include(x => x.ContactDetail)
+                                .FirstOrDefaultAsync(cancellationToken)
+                                .Result 
+                        ?? new NullUser();
+            return user;
         }
     }
 }

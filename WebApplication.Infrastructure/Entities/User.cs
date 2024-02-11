@@ -10,6 +10,7 @@ namespace WebApplication.Infrastructure.Entities
         public int Id { get; set; }
         public string GivenNames { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        public virtual bool IsNull => false;
 
         public virtual ContactDetail? ContactDetail { get; set; }
     }
