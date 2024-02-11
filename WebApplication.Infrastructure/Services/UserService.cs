@@ -55,16 +55,28 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
         {
-            await _dbContext.Users.AddAsync(user, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _dbContext.Users.AddAsync(user, cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
             
-            return user;
+                return user;
+            }
+            catch
+            {
+                return default;
+            }
         }
 
         /// <inheritdoc />
         public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            User? retrievedUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id, cancellationToken);
+            User? retrievedUser = await _dbContext.Users
+                                        .Where(x => x.Id == user.Id)
+                                        .Include(x => x.ContactDetail)
+                                        .FirstOrDefaultAsync(cancellationToken);
+
+            if (retrievedUser == null) return default;
             
             retrievedUser.Id = user.Id;
             retrievedUser.GivenNames = user.GivenNames;
@@ -79,24 +91,24 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            
-            User? user = await _dbContext.Users.Where(user => user.Id == id)
-                .Include(x => x.ContactDetail)
-                .FirstOrDefaultAsync(cancellationToken);
 
+            User? user = await _dbContext.Users
+                                .Where(user => user.Id == id)
+                                .Include(x => x.ContactDetail)
+                                .FirstOrDefaultAsync(cancellationToken);
+            
             if (user == null) return default;
             
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+        
             return user;
-            
         }
 
         /// <inheritdoc />
         public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            var totalUserCount = await _dbContext.Users.CountAsync(cancellationToken);
+            int totalUserCount = await _dbContext.Users.CountAsync(cancellationToken);
 
             return totalUserCount;
         }
