@@ -55,17 +55,10 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                await _dbContext.Users.AddAsync(user, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-            
-                return user;
-            }
-            catch
-            {
-                return default;
-            }
+            await _dbContext.Users.AddAsync(user, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        
+            return user;
         }
 
         /// <inheritdoc />
