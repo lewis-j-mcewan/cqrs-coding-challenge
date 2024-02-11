@@ -65,8 +65,6 @@ namespace WebApplication.Infrastructure.Services
         public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
             User retrievedUser = await GetUser(user.Id, cancellationToken);
-
-            if (retrievedUser.IsNull) return default;
             
             retrievedUser.Id = user.Id;
             retrievedUser.GivenNames = user.GivenNames;

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
-using WebApplication.Core.Common.Exceptions;
 using WebApplication.Core.Users.Common.Models;
 using WebApplication.Infrastructure.Entities;
 using WebApplication.Infrastructure.Interfaces;
@@ -20,7 +19,7 @@ namespace WebApplication.Core.Users.Commands
 
         public class Validator : AbstractValidator<UpdateUserCommand>
         {
-            public Validator()
+            public Validator(IUserService userService)
             {
                 RuleFor(x => x.Id)
                     .GreaterThan(0);
@@ -36,6 +35,16 @@ namespace WebApplication.Core.Users.Commands
                 
                 RuleFor(x => x.MobileNumber)
                     .NotEmpty();
+                
+                RuleFor(x => x.Id)
+                    .Custom((id, context) =>
+                    {
+                        User? user = userService.GetAsync(id).Result;
+                        if (user is default(User))
+                        {
+                            context.AddFailure("Not Found", $"The user '{id}' could not be found.");
+                        }
+                    }).When(x => x.Id > 0);
             }
         }
 
@@ -65,10 +74,6 @@ namespace WebApplication.Core.Users.Commands
                 };
                 
                 User updatedUser = await _userService.UpdateAsync(user, cancellationToken);
-
-                if (updatedUser is default(User)) 
-                    throw new NotFoundException($"The user '{request.Id}' could not be found.");
-                
                 UserDto result = _mapper.Map<UserDto>(updatedUser);
 
                 return result;

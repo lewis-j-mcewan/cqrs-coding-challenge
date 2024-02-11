@@ -3,7 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
+using WebApplication.Core.Common.Exceptions;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace WebApplication.Core.Common.Behaviours
@@ -30,12 +32,12 @@ namespace WebApplication.Core.Common.Behaviours
                 .Where(x => x != null)
                 .ToList();
 
-            if (failures.Any())
-            {
-                throw new ValidationException(failures);
-            }
+            if (!failures.Any()) return await next();
+
+            ValidationFailure? notFoundFailure = failures.Find(x => x.PropertyName.Equals("Not Found"));
             
-            return await next();
+            if (notFoundFailure != default) throw new NotFoundException(notFoundFailure.ErrorMessage);
+            throw new ValidationException(failures);
         }
     }
 }
