@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
+using WebApplication.Core.Common.Exceptions;
 using WebApplication.Core.Users.Common.Models;
 using WebApplication.Infrastructure.Entities;
 using WebApplication.Infrastructure.Interfaces;
@@ -45,7 +46,20 @@ namespace WebApplication.Core.Users.Queries
             public async Task<IEnumerable<UserDto>> Handle(FindUsersQuery request, CancellationToken cancellationToken)
             {
                 IEnumerable<User> users = await _userService.FindAsync(request.GivenNames, request.LastName, cancellationToken);
-                return users.Select(user => _mapper.Map<UserDto>(user));
+
+                List<User> usersList = users.ToList();
+
+                if (usersList.Any()) 
+                    return usersList.Select(user => _mapper.Map<UserDto>(user));
+                
+                string missingUsers = (request.GivenNames != null && request.LastName == null)
+                                            ? request.GivenNames
+                                            : (request.GivenNames == null && request.LastName != null) 
+                                            ? request.LastName 
+                                            : $"'{request.GivenNames} {request.LastName}'";
+                
+                throw new NotFoundException($"The user '{missingUsers}' could not be found");
+
             }
         }
     }

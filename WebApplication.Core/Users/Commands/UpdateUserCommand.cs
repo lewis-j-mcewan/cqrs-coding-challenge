@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
+using WebApplication.Core.Common.Exceptions;
 using WebApplication.Core.Users.Common.Models;
 using WebApplication.Infrastructure.Entities;
 using WebApplication.Infrastructure.Interfaces;
@@ -21,13 +22,20 @@ namespace WebApplication.Core.Users.Commands
         {
             public Validator()
             {
-                // If you are feeling ambitious, also create a validation rule that ensures the user exists in the database.
+                RuleFor(x => x.Id)
+                    .GreaterThan(0);
                 
-                RuleFor(x => x.Id).GreaterThan(0);
-                RuleFor(x => x.GivenNames).NotEmpty();
-                RuleFor(x => x.LastName).NotEmpty();
-                RuleFor(x => x.EmailAddress).NotEmpty();
-                RuleFor(x => x.MobileNumber).NotEmpty();
+                RuleFor(x => x.GivenNames)
+                    .NotEmpty();
+                
+                RuleFor(x => x.LastName)
+                    .NotEmpty();
+                
+                RuleFor(x => x.EmailAddress)
+                    .NotEmpty();
+                
+                RuleFor(x => x.MobileNumber)
+                    .NotEmpty();
             }
         }
 
@@ -57,6 +65,10 @@ namespace WebApplication.Core.Users.Commands
                 };
                 
                 User updatedUser = await _userService.UpdateAsync(user, cancellationToken);
+
+                if (updatedUser is default(User)) 
+                    throw new NotFoundException($"The user '{request.Id}' could not be found.");
+                
                 UserDto result = _mapper.Map<UserDto>(updatedUser);
 
                 return result;
