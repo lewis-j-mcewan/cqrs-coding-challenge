@@ -24,7 +24,7 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> GetAsync(int id, CancellationToken cancellationToken = default)
         {
-            User user = GetUser(id, cancellationToken);
+            User user = await GetUser(id, cancellationToken);
 
             if (user.IsNull) return default;
             return user;
@@ -64,7 +64,7 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            User retrievedUser = GetUser(user.Id, cancellationToken);
+            User retrievedUser = await GetUser(user.Id, cancellationToken);
 
             if (retrievedUser.IsNull) return default;
             
@@ -81,7 +81,7 @@ namespace WebApplication.Infrastructure.Services
         /// <inheritdoc />
         public async Task<User?> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            User user = GetUser(id, cancellationToken);
+            User user = await GetUser(id, cancellationToken);
             
             if (user.IsNull) return default;
             
@@ -99,12 +99,11 @@ namespace WebApplication.Infrastructure.Services
             return totalUserCount;
         }
 
-        private User GetUser(int id, CancellationToken cancellationToken)
+        private async Task<User> GetUser(int id, CancellationToken cancellationToken)
         {
-            User user = _dbContext.Users.Where(user => user.Id == id)
+            User user = await _dbContext.Users.Where(user => user.Id == id)
                                 .Include(x => x.ContactDetail)
                                 .FirstOrDefaultAsync(cancellationToken)
-                                .Result 
                         ?? new NullUser();
             return user;
         }
