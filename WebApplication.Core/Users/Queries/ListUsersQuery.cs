@@ -48,13 +48,14 @@ namespace WebApplication.Core.Users.Queries
                 
                 IEnumerable<User> usersOnPage = await _userService
                     .GetPaginatedAsync(request.PageNumber, request.ItemsPerPage, cancellationToken);
+                IEnumerable<UserDto> usersDto = usersOnPage.Select(user => _mapper.Map<UserDto>(user));
                 
                 int totalPages = (int)Math.Ceiling(totalUserCount / (double)request.ItemsPerPage);
                 
                 PaginatedDto<IEnumerable<UserDto>> paginatedUsers = new PaginatedDto<IEnumerable<UserDto>>
                     {
-                        Data = usersOnPage.Select(user => _mapper.Map<UserDto>(user)),
-                        HasNextPage = totalPages > request.PageNumber
+                        Data = usersDto,
+                        HasNextPage = request.PageNumber < totalPages
                     };
 
                 return paginatedUsers;
