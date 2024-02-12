@@ -25,19 +25,28 @@ namespace WebApplication.Core.Common.Behaviours
             CancellationToken cancellationToken,
             RequestHandlerDelegate<TResponse> next)
         {
+            if (!_validators.Any())
+            {
+                return await next();
+            }
+            
             var context = new ValidationContext<TRequest>(request);
             var failures = _validators
-                .Select(x => x.Validate(context))
-                .SelectMany(x => x.Errors)
-                .Where(x => x != null)
+                .Select(validator => validator.Validate(context))
+                .SelectMany(validationResult => validationResult.Errors)
+                .Where(validationFailure => validationFailure != null)
                 .ToList();
 
             if (!failures.Any()) return await next();
-
+            
             ValidationFailure? notFoundFailure = failures.Find(x => x.PropertyName.Equals("Not Found"));
             
-            if (notFoundFailure != default) throw new NotFoundException(notFoundFailure.ErrorMessage);
+            if (notFoundFailure != default)
+            {
+                throw new NotFoundException(notFoundFailure.ErrorMessage);
+            } 
             throw new ValidationException(failures);
+            
         }
     }
 }

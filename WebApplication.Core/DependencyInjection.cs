@@ -22,6 +22,7 @@ namespace WebApplication.Core
             services.AddInfrastructureServices();
 
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehaviour<,>));
 
             services.AddProblemDetails(
                 options =>

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
-using WebApplication.Core.Common.Exceptions;
 using WebApplication.Core.Common.Models;
 using WebApplication.Core.Users.Common.Models;
 using WebApplication.Infrastructure.Entities;
@@ -42,14 +41,11 @@ namespace WebApplication.Core.Users.Queries
             /// <inheritdoc />
             public async Task<PaginatedDto<IEnumerable<UserDto>>> Handle(ListUsersQuery request, CancellationToken cancellationToken)
             {
-                int totalUserCount = await _userService.CountAsync(cancellationToken);
-                
-                if (totalUserCount == 0) throw new NotFoundException("No users could be found");
-                
                 IEnumerable<User> usersOnPage = await _userService
                     .GetPaginatedAsync(request.PageNumber, request.ItemsPerPage, cancellationToken);
                 IEnumerable<UserDto> usersDto = usersOnPage.Select(user => _mapper.Map<UserDto>(user));
                 
+                int totalUserCount = await _userService.CountAsync(cancellationToken);
                 int totalPages = (int)Math.Ceiling(totalUserCount / (double)request.ItemsPerPage);
                 
                 PaginatedDto<IEnumerable<UserDto>> paginatedUsers = new PaginatedDto<IEnumerable<UserDto>>
