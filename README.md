@@ -1,4 +1,4 @@
-# InfoTrack .NET Core MidLevel Tech Test
+# CQRS .NET Core MidLevel Tech Test
 
 - [Description](#description)
 - [Your Mission](#your-mission)
